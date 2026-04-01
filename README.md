@@ -29,22 +29,20 @@ flowchart LR
 ---
 
 ### 3. Component 구현
-모든 컴포넌트는 함수형 컴포넌트로 구현하였다.  
-루트 컴포넌트는 `App` 하나이며, 나머지 컴포넌트는 모두 props만 받아 화면을 렌더링하는 stateless pure function으로 구성하였다.
+루트 `App`만 상태와 Hook을 가지고, 나머지 컴포넌트는 props만 받아 화면 조각을 렌더링한다.
 
-테스트 페이지에서의 구성은 다음과 같다.
+```mermaid
+graph TD
+    S["labState + Hooks"] --> A["App (root component)"]
+    A --> B["HeroBadge"]
+    A --> C["StatCard"]
+    A --> D["SortChip"]
+    A --> E["OrderPill"]
+    A --> F["ButtonCard"]
+    A --> G["EmptyState"]
+```
 
-- 루트 컴포넌트
-  - `App`
-- 자식 컴포넌트
-  - `HeroBadge`
-  - `StatCard`
-  - `SortChip`
-  - `OrderPill`
-  - `ButtonCard`
-  - `EmptyState`
-
-즉, 상태와 Hook은 `App`에만 두고, 자식 컴포넌트는 표현 역할만 담당하도록 분리하였다. 이는 과제의 `Lifting State Up` 제약을 반영한 구조이다.
+즉, 상태 변경은 `App`에서 시작하고, 자식 컴포넌트는 표현만 담당한다.
 
 ---
 
@@ -58,81 +56,75 @@ flowchart LR
 테스트 페이지에서 이 구조는 화면 전체를 담당하는 `App` 하나를 기준으로 동작한다.  
 예를 들어 버튼 클릭, 정렬 변경, 새 버튼 추가 등 모든 변화는 `App`의 `update()` 흐름을 통해 화면에 반영된다.
 
----00
-
 ### 5. State 구현
-state는 루트 컴포넌트 `App`에서만 관리한다.  
-현재 테스트 페이지에서는 `labState` 하나에 아래 상태를 모아 저장한다.
+state는 루트 `App`의 `labState` 하나로 모아서 관리하고, 각 화면 영역은 필요한 값만 props로 받는다.
 
-- `buttons`
-- `sortMode`
-- `draftLabel`
-- `lastPressedId`
-- `chaosCount`
+```mermaid
+flowchart LR
+    A["App owns labState"]
+    A --> B["buttons"]
+    A --> C["sortMode"]
+    A --> D["draftLabel"]
+    A --> E["lastPressedId"]
+    A --> F["chaosCount"]
 
-이 상태는 자식 컴포넌트에 props로 내려가며, 자식은 상태를 직접 가지지 않는다.
+    B --> U1["버튼 카드 목록"]
+    C --> U2["정렬 칩 / 카드 순서"]
+    D --> U3["입력창 value"]
+    E --> U4["마지막 관측"]
+    F --> U5["셔플 횟수 표시"]
+```
 
-테스트 페이지에서 state가 드러나는 부분은 다음과 같다.
-
-- `buttons` : 버튼 카드 목록 자체
-- `sortMode` : 정렬 칩 선택 상태와 버튼 카드 정렬 결과
-- `draftLabel` : 새 버튼 입력창 값
-- `lastPressedId` : 우측 상단 마지막 관측 영역
-- `chaosCount` : 셔플 횟수 표시
-
-이 구조를 통해 상태가 루트에서만 관리되고, UI 전체가 하나의 상태 저장소에 의해 일관되게 갱신되는 흐름을 보여 준다.
+공유 상태를 루트에 모아 두었기 때문에 버튼 목록, 통계, 정렬, 입력창이 한 번의 update 흐름으로 함께 갱신된다.
 
 ---
 
 ### 6. Hooks 구현
 
 #### 6-1. `useState`
-`useState`는 현재 `hookIndex` 위치의 `hooks` 배열에 상태 값을 저장한다.  
-초기 렌더에서는 초기값을 저장하고, 이후에는 같은 인덱스의 값을 재사용한다.
+`useState`는 `hooks[hookIndex]`에 값을 저장하고, `setState` 호출 시 update를 예약한다.
 
-`setState`가 호출되면 다음 순서로 동작한다.
+```mermaid
+flowchart LR
+    A["useState(initialValue)"] --> B["hooks[hookIndex]에 값 저장"]
+    B --> C["setState(nextValue)"]
+    C --> D["hooks 배열 값 갱신"]
+    D --> E["scheduleUpdate()"]
+    E --> F["App 재실행"]
+    F --> G["새 VDOM 생성"]
+```
 
-1. `hooks` 배열의 상태 값 갱신
-2. `scheduleUpdate()` 호출
-3. `update()` 예약
-4. 루트 컴포넌트 재실행
-5. 새 Virtual DOM 생성
-6. diff + patch 수행
-
-테스트 페이지에서 `useState`는 다음 부분에 사용된다.
-
-- 버튼 클릭 횟수 증가 : 각 `ButtonCard`의 클릭 버튼
-- 버튼 삭제 : 각 `ButtonCard`의 `연구 종료` 버튼
-- 정렬 모드 변경 : `실험 순`, `인기 순`, `이름 순` 칩
-- 새 버튼 생성 : 입력창 + 생성 버튼
-- 셔플 / 초기화 : `혼돈 셔플 실행`, `기본 연구실 초기화`
+테스트 페이지에서는 버튼 클릭, 삭제, 정렬 변경, 입력창 값, 셔플, 초기화가 모두 `useState` 기반으로 동작한다.
 
 #### 6-2. `useEffect`
-`useEffect`는 dependency 배열을 비교한 뒤, 값이 바뀌었을 때 실행할 effect를 `pendingEffects`에 저장한다.  
-effect는 렌더 도중 바로 실행되지 않고, `patch`가 끝난 뒤 `flushEffects()` 단계에서 실행된다.
+`useEffect`는 deps가 바뀌면 effect를 예약하고, `patch`가 끝난 뒤 `flushEffects()`에서 실행한다.
 
-테스트 페이지에서 `useEffect`는 두 곳에 사용된다.
+```mermaid
+flowchart LR
+    A["render 중 useEffect 호출"] --> B["deps 비교"]
+    B -->|변경됨| C["pendingEffects에 저장"]
+    B -->|변경 없음| D["이번 렌더에서는 실행 안 함"]
+    C --> E["patch 완료"]
+    E --> F["flushEffects()"]
+    F --> G["effect 실행"]
+    G --> H["다음 실행 전 cleanup"]
+```
 
-- `document.title` 변경 및 콘솔 로그 출력
-  - 클릭 수가 바뀐 뒤 effect가 실행됨
-  - cleanup 시점도 콘솔로 확인 가능
-- localStorage 저장
-  - 버튼 목록, 정렬 상태, 마지막 클릭 정보 등을 브라우저 저장소에 유지
-
-즉, 테스트 페이지는 `useEffect`가 “화면 렌더링”이 아니라 “화면 반영 이후의 부수효과”를 처리한다는 점을 보여 준다.
+테스트 페이지에서는 `document.title` 변경, 콘솔 로그, `localStorage` 저장으로 effect가 화면 반영 이후에 실행됨을 보여 준다.
 
 #### 6-3. `useMemo`
-`useMemo`는 dependency가 바뀌지 않으면 이전 계산 결과를 재사용한다.  
-이를 통해 원본 state에서 파생되는 값을 별도의 state로 중복 저장하지 않고 관리할 수 있다.
+`useMemo`는 deps가 같으면 이전 계산 결과를 그대로 재사용하고, 바뀌면 다시 계산한다.
 
-테스트 페이지에서 `useMemo`는 다음 부분에 사용된다.
+```mermaid
+flowchart LR
+    A["render 중 useMemo 호출"] --> B["deps 비교"]
+    B -->|변경됨| C["factory 다시 실행"]
+    B -->|변경 없음| D["이전 계산 결과 재사용"]
+    C --> E["visibleButtons / dashboard / nextSuggestion / headline"]
+    D --> E
+```
 
-- `visibleButtons` : 정렬 모드에 따라 버튼 목록을 계산
-- `dashboard` : 총 클릭 수, 최다 클릭 버튼, 최저 클릭 버튼, 마지막 클릭 버튼 계산
-- `nextSuggestion` : 아직 추가되지 않은 추천 버튼 계산
-- `headline` : 상단 설명 문구 계산
-
-이로써 “파생 데이터는 state가 아니라 계산 결과로 관리한다”는 점을 보여 준다.
+즉, 파생 데이터는 별도 state로 저장하지 않고 `useMemo` 계산 결과로 관리한다.
 
 ---
 
@@ -175,43 +167,54 @@ Hook은 배열과 인덱스로 관리되기 때문에, 매 렌더마다 Hook 호
 ---
 
 ### 9. Key 기반 children 비교
-children 비교는 key를 우선 기준으로 구현하였다.  
-리스트 항목에 stable key가 있으면, 순서가 바뀌더라도 같은 항목으로 인식하여 기존 DOM 노드를 가능한 한 재사용할 수 있다.
+정렬이나 셔플이 발생해도 같은 `id`를 가진 child는 같은 항목으로 매칭하고, DOM 노드는 가능한 한 재사용한다.
 
-테스트 페이지에서 key 기반 diff가 가장 잘 드러나는 부분은 다음 두 곳이다.
+```mermaid
+flowchart LR
+    A["old children: [A(id=1), B(id=2), C(id=3)]"]
+    B["new children: [C(id=3), A(id=1), B(id=2)]"]
 
-- 버튼 카드 목록
-  - `visibleButtons.map(...)`에서 `key={button.id}` 사용
-- 현재 렌더 순서 표시 영역
-  - `OrderPill` 목록에서 `key={button.id}` 사용
+    A --> C["key로 old child 찾기"]
+    B --> C
+    C --> D["같은 id면 같은 DOM 노드 재사용"]
+    D --> E["순서만 reorder"]
+```
 
-정렬 모드 변경이나 셔플이 발생해도 같은 버튼은 같은 `id`를 유지하므로, key 기반 children 비교가 실제로 동작하는 것을 설명할 수 있다.
+테스트 페이지에서는 `visibleButtons.map(...)`와 `OrderPill` 목록 모두 `key={button.id}`를 사용한다.
 
 ---
 
 ### 10. setState가 상태 변경 외에 하는 일
-본 프로젝트에서 `setState`는 단순히 값을 바꾸는 함수가 아니라, 전체 업데이트 흐름의 시작점이다.
+`setState`는 값만 바꾸는 함수가 아니라, 전체 렌더링 파이프라인을 다시 시작하는 진입점이다.
 
-동작 순서는 다음과 같다.
+```mermaid
+flowchart LR
+    A["setState"] --> B["hooks 배열 값 갱신"]
+    B --> C["scheduleUpdate()"]
+    C --> D["App 재실행"]
+    D --> E["새 Virtual DOM 생성"]
+    E --> F["diff(old, new)"]
+    F --> G["patch(real DOM)"]
+    G --> H["flushEffects()"]
+```
 
-1. 상태 저장소(`hooks` 배열) 갱신
-2. `scheduleUpdate()` 호출
-3. 루트 컴포넌트 `App` 재실행
-4. 새로운 Virtual DOM 생성
-5. 이전 Virtual DOM과 diff 수행
-6. 바뀐 부분만 실제 DOM에 patch
-7. patch 이후 `useEffect` 실행
-
-테스트 페이지에서는 버튼 클릭, 정렬 변경, 입력값 변경, 삭제, 추가, 초기화 모든 동작이 이 흐름을 따른다.
+버튼 클릭, 정렬 변경, 입력값 변경, 삭제, 추가, 초기화는 모두 이 흐름으로 처리된다.
 
 ---
 
 ### 11. batching
-같은 tick 안에서 여러 번 `setState`가 호출되더라도, 중복 `update()` 예약을 막아 한 번의 재렌더링으로 묶는 간단한 batching을 적용하였다.  
-이를 통해 상태 변경이 즉시 DOM을 직접 수정하는 것이 아니라, 하나의 update 흐름으로 수집된 뒤 반영된다는 점을 보여 준다.
+같은 tick 안의 여러 `setState`는 하나의 `update()`로 묶이도록 구현하였다.
 
-현재 테스트 페이지에서는 주로 개별 이벤트 중심으로 동작하지만, 구현 자체는 여러 상태 변경을 한 번의 update로 묶을 수 있도록 설계되어 있다.  
-즉, batching은 선택 과제이지만, 본 구현에서는 간단한 형태로 반영하였다.
+```mermaid
+flowchart LR
+    A["setState 1"] --> D["scheduleUpdate()"]
+    B["setState 2"] --> D
+    C["setState 3"] --> D
+    D --> E["microtask에서 update() 1회 실행"]
+    E --> F["diff + patch 1회"]
+```
+
+즉, 여러 상태 변경이 곧바로 여러 번의 DOM 수정으로 이어지지 않고, 하나의 update 흐름으로 수집된다.
 
 ---
 

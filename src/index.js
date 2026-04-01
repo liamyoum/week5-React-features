@@ -12,39 +12,53 @@ const BASE_ITEMS = [
   { id: "gamma", label: "Gamma" },
 ];
 
+// title 문자열을 보여 주는 stateless child component이다.
 function SectionTitle({ text }) {
-  return h("h2", { className: "section-title" }, text);
+  return <h2 className="section-title">{text}</h2>;
 }
 
+// label과 value를 한 줄로 보여 주는 stateless child component이다.
 function InfoRow({ label, value }) {
-  return h(
-    "div",
-    { className: "info-row" },
-    h("span", { className: "info-label" }, label),
-    h("span", { className: "info-value" }, value),
+  return (
+    <div className="info-row">
+      <span className="info-label">{label}</span>
+      <span className="info-value">{value}</span>
+    </div>
   );
 }
 
+// key 비교에 사용할 id를 data attribute로 표시하는 child component이다.
 function KeyedItem({ item }) {
-  return h("li", { className: "item", "data-key": item.id }, item.label);
+  return (
+    <li className="item" data-key={item.id}>
+      {item.label}
+    </li>
+  );
 }
 
+// key가 있는 children 목록을 만드는 stateless child component이다.
 function KeyedList({ items }) {
-  return h(
-    "ul",
-    { className: "item-list" },
-    items.map((item) => h(KeyedItem, { key: item.id, item })),
+  return (
+    <ul className="item-list">
+      {items.map((item) => (
+        <KeyedItem key={item.id} item={item} />
+      ))}
+    </ul>
   );
 }
 
+// key가 없는 children 목록을 만들어 fallback diff를 보여 주는 component이다.
 function UnkeyedList({ items }) {
-  return h(
-    "ul",
-    { className: "item-list" },
-    items.map((item) => h(KeyedItem, { item })),
+  return (
+    <ul className="item-list">
+      {items.map((item) => (
+        <KeyedItem item={item} />
+      ))}
+    </ul>
   );
 }
 
+// 루트 state, hooks, 이벤트 핸들러를 모두 관리하는 root component이다.
 function App() {
   const [count, setCount] = useState(0);
   const [isReversed, setIsReversed] = useState(false);
@@ -83,62 +97,51 @@ function App() {
     setIsReversed((previousValue) => !previousValue);
   };
 
-  return h(
-    "main",
-    { className: "page" },
-    h(
-      "section",
-      { className: "card" },
-      h("h1", { className: "title" }, "mini React Core"),
-      h(
-        "p",
-        { className: "description" },
-        "이 화면은 서비스용 데모 앱이 아니라 core 동작을 확인하기 위한 최소 렌더링 결과이다.",
-      ),
-      h(SectionTitle, { text: "Root State" }),
-      h(
-        "div",
-        { className: "info-list" },
-        h(InfoRow, { label: "count", value: String(count) }),
-        h(InfoRow, {
-          label: "memo(count * 2)",
-          value: String(doubledCount),
-        }),
-        h(InfoRow, {
-          label: "list order",
-          value: isReversed ? "reversed" : "normal",
-        }),
-      ),
-      h(
-        "div",
-        { className: "button-row" },
-        h("button", { type: "button", onClick: increaseOnce }, "+1"),
-        h(
-          "button",
-          { type: "button", onClick: increaseTwiceInOneTick },
-          "+2 in one tick",
-        ),
-        h(
-          "button",
-          { type: "button", onClick: toggleOrder },
-          "toggle keyed order",
-        ),
-      ),
-      h(SectionTitle, { text: "Keyed Children" }),
-      h(
-        "p",
-        { className: "note" },
-        "아래 목록은 key(id)를 기준으로 비교되므로 순서가 바뀌어도 같은 DOM 노드를 재사용한다.",
-      ),
-      h(KeyedList, { items: keyedItems }),
-      h(SectionTitle, { text: "Fallback Children" }),
-      h(
-        "p",
-        { className: "note" },
-        "다음 목록은 key가 없어서 index 기반 fallback 비교를 사용한다. 순서 변경 시 identity를 정확히 보장하지 못한다.",
-      ),
-      h(UnkeyedList, { items: keyedItems }),
-    ),
+  return (
+    <main className="page">
+      <section className="card">
+        <h1 className="title">mini React Core</h1>
+        <p className="description">
+          이 화면은 서비스용 데모 앱이 아니라 core 동작을 확인하기 위한 최소 렌더링 결과이다.
+        </p>
+
+        <SectionTitle text="Root State" />
+
+        <div className="info-list">
+          <InfoRow label="count" value={String(count)} />
+          <InfoRow label="memo(count * 2)" value={String(doubledCount)} />
+          <InfoRow
+            label="list order"
+            value={isReversed ? "reversed" : "normal"}
+          />
+        </div>
+
+        <div className="button-row">
+          <button type="button" onClick={increaseOnce}>
+            +1
+          </button>
+          <button type="button" onClick={increaseTwiceInOneTick}>
+            +2 in one tick
+          </button>
+          <button type="button" onClick={toggleOrder}>
+            toggle keyed order
+          </button>
+        </div>
+
+        <SectionTitle text="Keyed Children" />
+        <p className="note">
+          아래 목록은 key(id)를 기준으로 비교되므로 순서가 바뀌어도 같은 DOM 노드를 재사용한다.
+        </p>
+        <KeyedList items={keyedItems} />
+
+        <SectionTitle text="Fallback Children" />
+        <p className="note">
+          다음 목록은 key가 없어서 index 기반 fallback 비교를 사용한다. 순서 변경 시 identity를
+          정확히 보장하지 못한다.
+        </p>
+        <UnkeyedList items={keyedItems} />
+      </section>
+    </main>
   );
 }
 

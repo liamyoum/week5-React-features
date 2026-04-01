@@ -39,6 +39,7 @@
 
 ```text
 index.html
+package.json
 style.css
 src/
   core/
@@ -61,7 +62,12 @@ AGENTS.md
 ### `index.html`
 - 브라우저 진입 파일
 - `#app` 컨테이너 제공
-- `src/index.js`를 ES module로 실행
+- 빌드된 `dist/app.js`를 ES module로 실행
+
+### `package.json`
+- JSX 빌드 스크립트 정의
+- `esbuild`가 `src/index.js`의 JSX를 `h()` 호출로 변환
+- `build`, `watch` 명령 제공
 
 ### `style.css`
 - 과제 확인용 최소 스타일
@@ -112,6 +118,7 @@ AGENTS.md
 
 ### `src/index.js`
 - 과제 확인용 루트 컴포넌트 정의
+- JSX 문법으로 UI 작성
 - 루트에서만 state와 hooks 사용
 - 자식 컴포넌트는 props만 받는 stateless pure function으로 유지
 - keyed list와 unkeyed fallback list를 함께 보여 주어 diff 방식을 비교
@@ -470,14 +477,28 @@ index 기반 fallback은 identity를 완전히 보장하지 못한다.
 
 ## 17. 실행 방법
 
-이 프로젝트는 별도 라이브러리 없이 브라우저에서 바로 실행할 수 있다.
+이 프로젝트는 JSX를 직접 작성할 수 있도록 빌드 단계를 하나 추가했다.
 
-### 방법 1. VS Code Live Server
+### 1. 의존성 설치
+
+```bash
+npm install
+```
+
+### 2. JSX 빌드
+
+```bash
+npm run build
+```
+
+이 명령은 `src/index.js`의 JSX를 `h()` 호출로 변환해서 `dist/app.js`를 만든다.
+
+### 3. 브라우저에서 실행
 
 1. 프로젝트 루트를 연다.
 2. `index.html`을 Live Server로 실행한다.
 
-### 방법 2. 단순 정적 서버
+또는 단순 정적 서버를 실행해도 된다.
 
 ```bash
 npx serve .
@@ -490,6 +511,14 @@ python -m http.server
 ```
 
 그 뒤 브라우저에서 서버 주소를 열면 된다.
+
+### watch 모드
+
+```bash
+npm run watch
+```
+
+파일 저장 시 JSX가 다시 빌드된다.
 
 ---
 

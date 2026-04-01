@@ -1,0 +1,11 @@
+{
+  "name": "mini-react-assignment",
+  "private": true,
+  "scripts": {
+    "build": "esbuild src/index.js --bundle --outfile=dist/app.js --format=esm --loader:.js=jsx --jsx-factory=h --sourcemap",
+    "watch": "esbuild src/index.js --bundle --outfile=dist/app.js --format=esm --loader:.js=jsx --jsx-factory=h --sourcemap --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.3"
+  }
+}

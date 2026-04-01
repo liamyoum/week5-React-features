@@ -37,6 +37,14 @@ function KeyedList({ items }) {
   );
 }
 
+function UnkeyedList({ items }) {
+  return h(
+    "ul",
+    { className: "item-list" },
+    items.map((item) => h(KeyedItem, { item })),
+  );
+}
+
 function App() {
   const [count, setCount] = useState(0);
   const [isReversed, setIsReversed] = useState(false);
@@ -123,6 +131,13 @@ function App() {
         "아래 목록은 key(id)를 기준으로 비교되므로 순서가 바뀌어도 같은 DOM 노드를 재사용한다.",
       ),
       h(KeyedList, { items: keyedItems }),
+      h(SectionTitle, { text: "Fallback Children" }),
+      h(
+        "p",
+        { className: "note" },
+        "다음 목록은 key가 없어서 index 기반 fallback 비교를 사용한다. 순서 변경 시 identity를 정확히 보장하지 못한다.",
+      ),
+      h(UnkeyedList, { items: keyedItems }),
     ),
   );
 }

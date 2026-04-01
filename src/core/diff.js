@@ -1,6 +1,6 @@
 /**
  * 이전 Virtual DOM과 새로운 Virtual DOM을 비교해 patch에 필요한 정보만 만든다.
- * children은 key를 우선 사용하고, key가 없을 때만 남은 unkeyed child를 순서대로 매칭한다.
+ * children은 key를 우선 사용하고, key가 없을 때는 index 기반 fallback 비교를 수행한다.
  */
 import { TEXT_ELEMENT } from "./createElement.js";
 import { getComparableProps } from "./dom.js";
@@ -41,31 +41,50 @@ function hasPropChanges(propChanges) {
   return propChanges.set.length > 0 || propChanges.remove.length > 0;
 }
 
+function isKeyedChild(child) {
+  return child && child.key !== null;
+}
+
+function findFallbackOldChild(oldChildren, usedOldIndices, startIndex) {
+  const directChild = oldChildren[startIndex];
+
+  if (
+    directChild &&
+    !isKeyedChild(directChild) &&
+    !usedOldIndices.has(startIndex)
+  ) {
+    return { child: directChild, index: startIndex };
+  }
+
+  for (let index = 0; index < oldChildren.length; index += 1) {
+    const oldChild = oldChildren[index];
+
+    if (!isKeyedChild(oldChild) && !usedOldIndices.has(index)) {
+      return { child: oldChild, index };
+    }
+  }
+
+  return null;
+}
+
 function diffChildren(oldChildren = [], newChildren = []) {
   const childPatches = [];
   const oldKeyedChildren = new Map();
-  const oldUnkeyedChildren = [];
   const usedOldIndices = new Set();
 
   oldChildren.forEach((child, index) => {
-    if (child.key !== null) {
+    if (isKeyedChild(child)) {
       oldKeyedChildren.set(child.key, { child, index });
-      return;
     }
-
-    oldUnkeyedChildren.push({ child, index });
   });
 
-  let unkeyedCursor = 0;
-
-  newChildren.forEach((newChild) => {
+  newChildren.forEach((newChild, newIndex) => {
     let matchedEntry = null;
 
-    if (newChild.key !== null) {
+    if (isKeyedChild(newChild)) {
       matchedEntry = oldKeyedChildren.get(newChild.key) ?? null;
-    } else if (unkeyedCursor < oldUnkeyedChildren.length) {
-      matchedEntry = oldUnkeyedChildren[unkeyedCursor];
-      unkeyedCursor += 1;
+    } else {
+      matchedEntry = findFallbackOldChild(oldChildren, usedOldIndices, newIndex);
     }
 
     if (matchedEntry) {

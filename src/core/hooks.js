@@ -3,6 +3,7 @@
  * Hook은 루트 FunctionComponent가 렌더링되는 동안에만 사용할 수 있다.
  */
 let currentInstance = null;
+let isRenderingRootComponent = false;
 
 function haveDepsChanged(previousDeps, nextDeps) {
   if (!Array.isArray(previousDeps) || !Array.isArray(nextDeps)) {
@@ -17,20 +18,33 @@ function haveDepsChanged(previousDeps, nextDeps) {
 }
 
 function assertHookUsage(name) {
-  if (!currentInstance) {
+  if (!currentInstance || !isRenderingRootComponent) {
     throw new Error(
-      `${name}는 루트 함수형 컴포넌트에서만 사용할 수 있습니다.`,
+      `${name} can only run while the root FunctionComponent is rendering.`,
+    );
+  }
+}
+
+function assertHookSlotType(instance, hookIndex, expectedType, hookName) {
+  const existingHook = instance.hooks[hookIndex];
+
+  if (existingHook && existingHook.type !== expectedType) {
+    throw new Error(
+      `${hookName} must keep the same call order on every render. ` +
+        `Check conditional Hook calls or changed Hook positions.`,
     );
   }
 }
 
 export function prepareHooks(instance) {
   currentInstance = instance;
+  isRenderingRootComponent = true;
   instance.hookIndex = 0;
   instance.pendingEffects = [];
 }
 
 export function finishHooks() {
+  isRenderingRootComponent = false;
   currentInstance = null;
 }
 
@@ -49,6 +63,8 @@ export function useState(initialValue) {
 
   const instance = currentInstance;
   const hookIndex = instance.hookIndex;
+
+  assertHookSlotType(instance, hookIndex, "state", "useState");
 
   if (!instance.hooks[hookIndex]) {
     instance.hooks[hookIndex] = {
@@ -84,6 +100,8 @@ export function useEffect(effect, deps) {
 
   const instance = currentInstance;
   const hookIndex = instance.hookIndex;
+
+  assertHookSlotType(instance, hookIndex, "effect", "useEffect");
   const hook =
     instance.hooks[hookIndex] ??
     {
@@ -114,6 +132,8 @@ export function useMemo(factory, deps) {
 
   const instance = currentInstance;
   const hookIndex = instance.hookIndex;
+
+  assertHookSlotType(instance, hookIndex, "memo", "useMemo");
   const hook =
     instance.hooks[hookIndex] ??
     {

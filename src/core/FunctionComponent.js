@@ -18,6 +18,7 @@ export class FunctionComponent {
     this.currentTree = null;
     this.isMounted = false;
     this.isUpdateScheduled = false;
+    this.isDisposed = false;
   }
 
   renderVirtualDOM() {
@@ -42,6 +43,10 @@ export class FunctionComponent {
 
   // 최초 렌더링 시 Virtual DOM을 만들고 실제 DOM으로 변환한다.
   mount() {
+    if (this.isDisposed) {
+      return null;
+    }
+
     const nextTree = this.renderVirtualDOM();
     const dom = createDomNode(nextTree);
 
@@ -55,6 +60,10 @@ export class FunctionComponent {
 
   // 상태 변경 후 새 Virtual DOM을 diff/patch 파이프라인으로 반영한다.
   update() {
+    if (this.isDisposed) {
+      return null;
+    }
+
     if (!this.isMounted) {
       return this.mount();
     }
@@ -80,10 +89,16 @@ export class FunctionComponent {
 
     Promise.resolve().then(() => {
       this.isUpdateScheduled = false;
+
+      if (this.isDisposed) {
+        return;
+      }
+
       this.update();
     });
   }
 
+  // Runs queued effects only after the patch step has finished.
   flushEffects() {
     const effectsToRun = [...this.pendingEffects];
     this.pendingEffects = [];
@@ -93,7 +108,9 @@ export class FunctionComponent {
     });
   }
 
+  // Unmount path that clears DOM and runs every remaining effect cleanup.
   cleanup() {
+    this.isDisposed = true;
     cleanupAllEffects(this);
     this.container.replaceChildren();
     this.currentTree = null;

@@ -1,6 +1,6 @@
 /**
  * mini React 외부 진입점이다.
- * 루트 함수를 FunctionComponent로 감싸고 최초 mount 또는 update를 호출한다.
+ * 루트 함수를 FunctionComponent로 감싸고 mount, update, unmount를 연결한다.
  */
 import { FunctionComponent } from "./FunctionComponent.js";
 
@@ -33,4 +33,14 @@ export function render(rootComponent, container, props = {}) {
 
 export function getRootInstance() {
   return rootInstance;
+}
+
+// Exposes an explicit unmount path so cleanup effects can run on root teardown.
+export function unmountRoot() {
+  if (!rootInstance) {
+    return;
+  }
+
+  rootInstance.cleanup();
+  rootInstance = null;
 }

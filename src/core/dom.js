@@ -8,11 +8,28 @@ function isEventProp(name) {
   return name.startsWith("on");
 }
 
+function isClassProp(name) {
+  return name === "class" || name === "className";
+}
+
 function getEventName(name) {
   return name.slice(2).toLowerCase();
 }
 
-function setStyle(dom, value = {}, previousValue = {}) {
+function clearStyle(dom, previousValue) {
+  if (typeof previousValue === "string") {
+    dom.style.cssText = "";
+    return;
+  }
+
+  if (previousValue && typeof previousValue === "object") {
+    Object.keys(previousValue).forEach((styleName) => {
+      dom.style[styleName] = "";
+    });
+  }
+}
+
+function setStyleObject(dom, value = {}, previousValue = {}) {
   Object.keys(previousValue).forEach((styleName) => {
     if (!(styleName in value)) {
       dom.style[styleName] = "";
@@ -24,16 +41,28 @@ function setStyle(dom, value = {}, previousValue = {}) {
   });
 }
 
+function setStyle(dom, value, previousValue) {
+  clearStyle(dom, previousValue);
+
+  if (typeof value === "string") {
+    dom.style.cssText = value;
+    return;
+  }
+
+  if (value && typeof value === "object") {
+    setStyleObject(dom, value, typeof previousValue === "object" ? previousValue : {});
+  }
+}
+
 function removeDomProperty(dom, name, previousValue) {
-  if (name === "className") {
+  if (isClassProp(name)) {
     dom.removeAttribute("class");
     return;
   }
 
-  if (name === "style" && previousValue && typeof previousValue === "object") {
-    Object.keys(previousValue).forEach((styleName) => {
-      dom.style[styleName] = "";
-    });
+  if (name === "style") {
+    clearStyle(dom, previousValue);
+    dom.removeAttribute("style");
     return;
   }
 
@@ -54,12 +83,22 @@ function removeDomProperty(dom, name, previousValue) {
 }
 
 function setDomProperty(dom, name, value, previousValue) {
-  if (name === "className") {
-    dom.setAttribute("class", value);
+  if (isClassProp(name)) {
+    if (value === false || value === null || value === undefined) {
+      removeDomProperty(dom, name, previousValue);
+      return;
+    }
+
+    dom.setAttribute("class", String(value));
     return;
   }
 
-  if (name === "style" && value && typeof value === "object") {
+  if (name === "style") {
+    if (value === false || value === null || value === undefined) {
+      removeDomProperty(dom, name, previousValue);
+      return;
+    }
+
     setStyle(dom, value, previousValue);
     return;
   }

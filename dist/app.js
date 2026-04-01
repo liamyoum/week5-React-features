@@ -832,8 +832,10 @@ function EmptyState({ onReset }) {
   return /* @__PURE__ */ h("div", { className: "empty-state" }, /* @__PURE__ */ h("h3", null, "\uC5F0\uAD6C \uB300\uC0C1\uC774 \uBAA8\uB450 \uC0AC\uB77C\uC84C\uC2B5\uB2C8\uB2E4."), /* @__PURE__ */ h("p", null, "\uC0C8 \uBC84\uD2BC\uC744 \uB9CC\uB4E4\uAC70\uB098 \uAE30\uBCF8 \uC5F0\uAD6C\uC2E4\uC744 \uBCF5\uC6D0\uD574\uC11C \uB2E4\uC2DC \uBB34\uC758\uBBF8\uB97C \uC313\uC544 \uBCF4\uC138\uC694."), /* @__PURE__ */ h("button", { type: "button", className: "primary-button", onClick: onReset }, "\uAE30\uBCF8 \uC5F0\uAD6C\uC2E4 \uBCF5\uC6D0"));
 }
 function App() {
+  console.count("[render] App");
   const [labState, setLabState] = useState(() => loadInitialLabState());
   const visibleButtons = useMemo(() => {
+    console.count("[memo] visibleButtons");
     if (labState.sortMode === "popular") {
       return [...labState.buttons].sort((left, right) => {
         if (right.presses !== left.presses) {
@@ -850,6 +852,7 @@ function App() {
     return labState.buttons;
   }, [labState.buttons, labState.sortMode]);
   const dashboard = useMemo(() => {
+    console.count("[memo] dashboard");
     const totalPresses = labState.buttons.reduce(
       (sum, button) => sum + button.presses,
       0

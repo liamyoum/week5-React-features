@@ -247,9 +247,11 @@ function EmptyState({ onReset }) {
 }
 
 function App() {
+  console.count("[render] App");
   const [labState, setLabState] = useState(() => loadInitialLabState());
 
   const visibleButtons = useMemo(() => {
+    console.count("[memo] visibleButtons");
     if (labState.sortMode === "popular") {
       return [...labState.buttons].sort((left, right) => {
         if (right.presses !== left.presses) {
@@ -270,6 +272,7 @@ function App() {
   }, [labState.buttons, labState.sortMode]);
 
   const dashboard = useMemo(() => {
+    console.count("[memo] dashboard");
     const totalPresses = labState.buttons.reduce(
       (sum, button) => sum + button.presses,
       0,

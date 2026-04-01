@@ -1,0 +1,111 @@
+/* 과제 확인용 최소 스타일. UI 자체보다 코드 구조를 읽기 쉽게 만드는 데 집중한다. */
+:root {
+  color-scheme: light;
+  font-family: "Segoe UI", sans-serif;
+  background-color: #f4f1ea;
+  color: #1e1b16;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top, rgba(210, 180, 140, 0.28), transparent 38%),
+    linear-gradient(180deg, #f7f3eb 0%, #efe6d9 100%);
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+}
+
+.page {
+  width: min(760px, 100%);
+}
+
+.card {
+  padding: 28px;
+  border: 1px solid #d5c7b5;
+  border-radius: 18px;
+  background-color: rgba(255, 252, 247, 0.95);
+  box-shadow: 0 24px 60px rgba(69, 49, 28, 0.12);
+}
+
+.title {
+  margin: 0 0 12px;
+  font-size: 2rem;
+}
+
+.description,
+.note {
+  margin: 0 0 16px;
+  line-height: 1.6;
+}
+
+.section-title {
+  margin: 24px 0 12px;
+  font-size: 1.1rem;
+}
+
+.info-list {
+  display: grid;
+  gap: 10px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background-color: #f3eadf;
+}
+
+.info-label {
+  font-weight: 700;
+}
+
+.info-value {
+  color: #5e4930;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+button {
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font: inherit;
+  color: white;
+  background-color: #7c5034;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #68432b;
+}
+
+.item-list {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 10px;
+}
+
+.item {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background-color: #fff9f1;
+  border: 1px solid #e3d6c4;
+}

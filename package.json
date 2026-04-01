@@ -6,6 +6,8 @@
     "watch": "esbuild src/index.js --bundle --outfile=dist/app.js --format=esm --loader:.js=jsx --jsx-factory=h --sourcemap --watch"
   },
   "devDependencies": {
-    "esbuild": "^0.25.3"
+    "esbuild": "^0.25.3",
+    "jsdom": "^29.0.1",
+    "playwright": "^1.59.0"
   }
 }

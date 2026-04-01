@@ -1,7 +1,3 @@
-/**
- * mini React의 Hook 구현부이다.
- * Hook은 루트 FunctionComponent가 렌더링되는 동안에만 사용할 수 있다.
- */
 let currentInstance = null;
 let isRenderingRootComponent = false;
 
@@ -57,7 +53,6 @@ export function cleanupAllEffects(instance) {
   });
 }
 
-// state 값을 hooks 배열에 저장하고 setState 호출 시 update를 예약한다.
 export function useState(initialValue) {
   assertHookUsage("useState");
 
@@ -94,7 +89,6 @@ export function useState(initialValue) {
   return [value, setState];
 }
 
-// dependency 배열을 비교해 patch 이후 실행할 effect를 등록한다.
 export function useEffect(effect, deps) {
   assertHookUsage("useEffect");
 
@@ -126,7 +120,6 @@ export function useEffect(effect, deps) {
   instance.hookIndex += 1;
 }
 
-// dependency가 바뀌지 않으면 이전 계산 결과를 재사용한다.
 export function useMemo(factory, deps) {
   assertHookUsage("useMemo");
 

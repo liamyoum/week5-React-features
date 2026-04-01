@@ -1,7 +1,3 @@
-/**
- * 이전 Virtual DOM과 새로운 Virtual DOM을 비교해 patch에 필요한 정보만 만든다.
- * children은 key를 우선 사용하고, key가 없을 때는 index 기반 fallback 비교를 수행한다.
- */
 import { TEXT_ELEMENT } from "./createElement.js";
 import { getComparableProps } from "./dom.js";
 
@@ -113,7 +109,6 @@ function diffChildren(oldChildren = [], newChildren = []) {
   return childPatches;
 }
 
-// 이전 vnode와 새 vnode를 비교해 patch 단계에 필요한 정보만 만든다.
 export function diff(oldVNode, newVNode) {
   if (!oldVNode && newVNode) {
     return {

@@ -1,7 +1,3 @@
-/**
- * diff 결과를 실제 DOM에 반영한다.
- * UPDATE 단계에서는 props를 갱신하고, 자식 patch를 적용한 뒤 최종 순서를 새 children 기준으로 맞춘다.
- */
 import { applyPropChanges, createDomNode } from "./dom.js";
 
 function reorderChildren(parentDom, nextChildren) {
@@ -22,7 +18,6 @@ function removeExtraNodes(parentDom, expectedLength) {
   }
 }
 
-// diff 결과를 읽고 실제 DOM에 필요한 최소 변경만 반영한다.
 export function patch(patchResult, container = null) {
   switch (patchResult.type) {
     case "CREATE": {

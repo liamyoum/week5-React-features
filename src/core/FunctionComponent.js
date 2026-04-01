@@ -1,7 +1,3 @@
-/**
- * 루트 함수형 컴포넌트를 감싸는 클래스이다.
- * hooks 배열, mount(), update(), 간단한 batching 스케줄링을 담당한다.
- */
 import { diff } from "./diff.js";
 import { createDomNode, resolveVNode } from "./dom.js";
 import { cleanupAllEffects, finishHooks, prepareHooks } from "./hooks.js";
@@ -41,7 +37,6 @@ export class FunctionComponent {
     return resolvedTree;
   }
 
-  // 최초 렌더링 시 Virtual DOM을 만들고 실제 DOM으로 변환한다.
   mount() {
     if (this.isDisposed) {
       return null;
@@ -58,7 +53,6 @@ export class FunctionComponent {
     return dom;
   }
 
-  // 상태 변경 후 새 Virtual DOM을 diff/patch 파이프라인으로 반영한다.
   update() {
     if (this.isDisposed) {
       return null;
@@ -79,7 +73,6 @@ export class FunctionComponent {
     return nextTree.dom;
   }
 
-  // 같은 tick 안의 여러 setState를 한 번의 update로 묶기 위한 간단한 batching이다.
   scheduleUpdate() {
     if (this.isUpdateScheduled) {
       return;
@@ -98,7 +91,6 @@ export class FunctionComponent {
     });
   }
 
-  // Runs queued effects only after the patch step has finished.
   flushEffects() {
     const effectsToRun = [...this.pendingEffects];
     this.pendingEffects = [];
@@ -108,7 +100,6 @@ export class FunctionComponent {
     });
   }
 
-  // Unmount path that clears DOM and runs every remaining effect cleanup.
   cleanup() {
     this.isDisposed = true;
     cleanupAllEffects(this);

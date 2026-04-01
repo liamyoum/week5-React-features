@@ -1,7 +1,3 @@
-/**
- * Virtual DOM을 실제 DOM으로 바꾸고, props를 DOM에 반영하는 유틸리티 모음이다.
- * 자식 함수형 컴포넌트는 여기서 순수 함수처럼 실행되어 host vnode로 변환된다.
- */
 import { TEXT_ELEMENT } from "./createElement.js";
 
 function isEventProp(name) {
@@ -75,7 +71,6 @@ function removeDomProperty(dom, name, previousValue) {
     try {
       dom[name] = "";
     } catch (_error) {
-      // DOM property에 직접 빈 값을 넣을 수 없는 경우를 대비한 보호 코드이다.
     }
   }
 
@@ -160,7 +155,6 @@ export function applyPropChanges(dom, propChanges) {
   });
 }
 
-// host vnode를 실제 DOM 노드로 바꾸는 함수이다.
 export function createDomNode(vnode) {
   if (vnode.type === TEXT_ELEMENT) {
     const textNode = document.createTextNode(vnode.props.nodeValue);
@@ -180,7 +174,6 @@ export function createDomNode(vnode) {
   return dom;
 }
 
-// 함수형 컴포넌트를 실행해 최종 host vnode 트리로 평탄화한다.
 export function resolveVNode(vnode) {
   if (
     vnode === null ||

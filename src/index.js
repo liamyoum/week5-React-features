@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "./core/hooks.js";
 import { render } from "./core/render.js";
 
 const STORAGE_KEY = "mini-react-useless-button-lab-v1";
+let customButtonSequence = 0;
 
 const BUTTON_LIBRARY = [
   {
@@ -122,7 +123,7 @@ function loadInitialLabState() {
 
     const parsedState = JSON.parse(rawState);
 
-    if (!Array.isArray(parsedState.buttons) || parsedState.buttons.length === 0) {
+    if (!Array.isArray(parsedState.buttons)) {
       return createDefaultLabState();
     }
 
@@ -161,9 +162,10 @@ function loadInitialLabState() {
 function createCustomButton(label, index) {
   const accent = BUTTON_LIBRARY[index % BUTTON_LIBRARY.length].accent;
   const trimmedLabel = label.trim();
+  customButtonSequence += 1;
 
   return {
-    id: `custom-${slugifyLabel(trimmedLabel) || "button"}-${Date.now()}`,
+    id: `custom-${slugifyLabel(trimmedLabel) || "button"}-${Date.now()}-${customButtonSequence}`,
     label: trimmedLabel,
     description: `"${trimmedLabel}" 연구가 사회에 미치는 영향은 아직 아무도 모릅니다.`,
     actionLabel: "괜히 눌러보기",
@@ -325,7 +327,7 @@ function App() {
         `[useEffect] cleanup before next render -> total ${dashboard.totalPresses}`,
       );
     };
-  }, [dashboard.totalPresses, dashboard.topButton, labState.sortMode]);
+  }, [dashboard.totalPresses]);
 
   useEffect(() => {
     if (typeof localStorage === "undefined") {

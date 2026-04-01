@@ -670,6 +670,7 @@ function render(rootComponent, container2, props = {}) {
 
 // src/index.js
 var STORAGE_KEY = "mini-react-useless-button-lab-v1";
+var customButtonSequence = 0;
 var BUTTON_LIBRARY = [
   {
     id: "dramatic-sigh",
@@ -770,7 +771,7 @@ function loadInitialLabState() {
       return createDefaultLabState();
     }
     const parsedState = JSON.parse(rawState);
-    if (!Array.isArray(parsedState.buttons) || parsedState.buttons.length === 0) {
+    if (!Array.isArray(parsedState.buttons)) {
       return createDefaultLabState();
     }
     return {
@@ -794,8 +795,9 @@ function loadInitialLabState() {
 function createCustomButton(label, index) {
   const accent = BUTTON_LIBRARY[index % BUTTON_LIBRARY.length].accent;
   const trimmedLabel = label.trim();
+  customButtonSequence += 1;
   return {
-    id: `custom-${slugifyLabel(trimmedLabel) || "button"}-${Date.now()}`,
+    id: `custom-${slugifyLabel(trimmedLabel) || "button"}-${Date.now()}-${customButtonSequence}`,
     label: trimmedLabel,
     description: `"${trimmedLabel}" \uC5F0\uAD6C\uAC00 \uC0AC\uD68C\uC5D0 \uBBF8\uCE58\uB294 \uC601\uD5A5\uC740 \uC544\uC9C1 \uC544\uBB34\uB3C4 \uBAA8\uB985\uB2C8\uB2E4.`,
     actionLabel: "\uAD1C\uD788 \uB20C\uB7EC\uBCF4\uAE30",
@@ -892,7 +894,7 @@ function App() {
         `[useEffect] cleanup before next render -> total ${dashboard.totalPresses}`
       );
     };
-  }, [dashboard.totalPresses, dashboard.topButton, labState.sortMode]);
+  }, [dashboard.totalPresses]);
   useEffect(() => {
     if (typeof localStorage === "undefined") {
       return;

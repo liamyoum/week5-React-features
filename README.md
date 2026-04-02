@@ -1,3 +1,6 @@
+
+<img width="314" height="278" alt="qr-code" src="https://github.com/user-attachments/assets/7dc5a728-576c-4be0-9d16-ed197eb7b3bd" />
+
 # Mini React 구현
 
 ### 1. 구현 목표
